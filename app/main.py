@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from app.database import engine, Base
-from app.routers import auth, employees, clients
-from app.routers import chatbot
+from app.routers import auth, employees, clients, chatbot  # Import the chatbot router
+
+# from app.utils.nlp_utils import llm  # Import llm to check its status
+
+app = FastAPI()
+
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
@@ -25,6 +29,12 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(employees.router, prefix="/employees", tags=["Employees"])
 app.include_router(clients.router, prefix="/clients", tags=["Clients"])
 app.include_router(chatbot.router, prefix="/api")
+
+
+# @app.post("/chatbot/")
+# async def chatbot_endpoint(query: str):
+#     response = chatbot_response(query)
+#     return {"response": response}
 
 
 @app.get("/")

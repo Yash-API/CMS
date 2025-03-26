@@ -1,72 +1,73 @@
-import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database import get_db
 from app.models import Employee, Client
+from app.utils.nlp_utils import extract_name, extract_department, extract_role
+import spacy
 
-router = APIRouter()
+router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+nlp = spacy.load("en_core_web_sm")  # Load NLP model
 
-@router.post("/chatbot")
-async def chatbot_query(question: dict, db: Session = Depends(get_db)):
-    """
-    Chatbot API to fetch employee, client, and sales (budget) data based on user questions.
-    Example questions:
-    - "How many employees do we have?"
-    - "List all employee names."
-    - "How many clients do we have?"
-    - "List all client names."
-    - "How many employees and clients do we have?"
-    - "What is the total sales?"
-    """
-    query_text = question.get("question", "").lower()
-    
-    # Employees and Clients Count with Names
-    if "how many employees and clients" in query_text:
-        employees = db.query(Employee.name).all()
+@router.get("/")
+def chatbot(query: str, db: Session = Depends(get_db)):
+    doc = nlp(query.lower())
+    words = set(token.text for token in doc)  # Convert query into a set of words for faster lookup
+
+    # **1. How many employees do we have?**
+    if "employees" in words or "employee" in words and "how" in words and "many" in words:
+        count = db.query(func.count(Employee.id)).scalar()
+        return {"response": f"There are {count} employees in the company."}
+
+    # **2. How many clients do we have? Give me their names**
+    elif "clients" in words or "client" in words and "how" in words and "many" in words:
         clients = db.query(Client.name).all()
+        client_names = [client[0] for client in clients]  # Extract names
+        count = len(client_names)
+        return {"response": f"There are {count} clients: {', '.join(client_names)}." if client_names else "There are no clients yet."}
+
+    # **3. What is the salary of [employee name]?**
+    elif "salary" in words and "of" in words:
+        person_name = extract_name(doc)
+        if person_name:
+            employee = db.query(Employee).filter(Employee.name.ilike(f"%{person_name}%")).first()
+            if employee:
+                return {"response": f"{employee.name}'s salary is {employee.salary}."}
+            else:
+                return {"response": f"Could not find an employee named {person_name}."}
+
+    # **4. List all employees in [department]**
+    elif "employees" in words and "in" in words:
+        department = extract_department(doc)
+        if department:
+            employees = db.query(Employee.name).filter(Employee.department.ilike(f"%{department}%")).all()
+            employee_names = [emp[0] for emp in employees]
+            return {"response": f"Employees in {department} department: {', '.join(employee_names)}." if employee_names else f"No employees found in {department} department."}
+
+    # **5. Who is working as [role]?**
+    elif "who" in words and "working" in words and "as" in words:
+        role = extract_role(doc)
+        if role:
+            employees = db.query(Employee.name).filter(Employee.role.ilike(f"%{role}%")).all()
+            employee_names = [emp[0] for emp in employees]
+            return {"response": f"Employees working as {role}: {', '.join(employee_names)}." if employee_names else f"No employees found working as {role}."}
+
+
+    # **6. What is the budget of [client name]?**
+    elif "budget" in words and "of" in words:
+        client_name = extract_name(doc)
+        if client_name:
+            client = db.query(Client).filter(Client.name.ilike(f"%{client_name}%")).first()
+            if client:
+                return {"response": f"{client.name}'s budget is {client.budget}."}
+            else:
+                return {"response": f"Could not find a client named {client_name}."}
         
-        employee_names = [emp.name for emp in employees]
-        client_names = [cli.name for cli in clients]
-
-        response = {
-            "employee_count": len(employee_names),
-            "employee_names": employee_names,
-            "client_count": len(client_names),
-            "client_names": client_names
-        }
-        return response
-
-    # Employee-related queries
-    if "how many employees" in query_text:
+    elif "list" in words and "employees" in words and "names" in words:
         employees = db.query(Employee.name).all()
-        employee_names = [emp.name for emp in employees]
-        return {"employee_count": len(employee_names), "employee_names": employee_names}
+        employee_names = [emp[0] for emp in employees]
+        return {"response": f"Employees: {', '.join(employee_names)}." if employee_names else "No employees found."}
     
-    if "list all employee names" in query_text:
-        employees = db.query(Employee.name).all()
-        employee_names = [emp.name for emp in employees]
-        return {"employee_names": employee_names}
-
-    # Client-related queries
-    if "how many clients" in query_text:
-        clients = db.query(Client.name).all()
-        client_names = [cli.name for cli in clients]
-        return {"client_count": len(client_names), "client_names": client_names}
     
-    if "list all client names" in query_text:
-        clients = db.query(Client.name).all()
-        client_names = [cli.name for cli in clients]
-        return {"client_names": client_names}
-
-    # Sales-related queries (Using Client Budget as Total Sales)
-    if "total sales" in query_text or "how much did we sell" in query_text:
-        total_sales = db.query(Client.budget).all()
-        total_amount = sum(client.budget for client in total_sales if client.budget is not None)
-        return {"response": f"The total sales (budget from all clients) is ${total_amount:.2f}."}
-
-    # Default response if the question is not understood
-    return {"response": "I'm sorry, I don't understand that question."}
+    return {"response": "I'm sorry, I don't understand the question."}

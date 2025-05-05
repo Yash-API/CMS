@@ -1,0 +1,165 @@
+/* Reset some default styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body, html, #root {
+  height: 100%;
+  background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Login styles */
+.login-container {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2563eb;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 16px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59,130,246,0.5);
+}
+
+.login-error {
+  color: #dc2626;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.login-button {
+  width: 100%;
+  background-color: #2563eb;
+  color: white;
+  padding: 14px 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #1e40af;
+}
+
+/* Chatbot styles */
+.chatbot-container {
+  background: white;
+  padding: 40px 40px 50px 40px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.chatbot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatbot-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #2563eb;
+}
+
+.logout-button {
+  background-color: #dc2626;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #991b1b;
+}
+
+.chatbot-input-group {
+  display: flex;
+  gap: 16px;
+}
+
+.chatbot-input {
+  flex-grow: 1;
+  padding: 14px 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  transition: border-color 0.3s ease;
+}
+
+.chatbot-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59,130,246,0.5);
+}
+
+.chatbot-send-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chatbot-send-button:hover {
+  background-color: #1e40af;
+}
+
+.chatbot-send-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chatbot-response {
+  background-color: #f3f4f6;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 140px;
+  font-size: 1.125rem;
+  color: #374151;
+  white-space: pre-line;
+}

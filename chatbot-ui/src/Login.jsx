@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./styles/Login.css";
+
+
+// Use API URL from env or fallback to localhost
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -8,20 +13,32 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log("✅ VITE_API_URL:", API_URL);
+  }, []);
+
   const login = async () => {
     try {
+      debugger; // Breakpoint
       const params = new URLSearchParams();
       params.append("username", email);
       params.append("password", password);
-      const res = await axios.post("http://localhost:8000/auth/login", params, {
+
+      console.log("🔐 Sending login request to:", `${API_URL}/api/auth/login`);
+
+      const res = await axios.post(`${API_URL}/api/auth/login`, params, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
+
       const token = res.data.access_token;
+      console.log("✅ Login Success. Token:", token);
+
       localStorage.setItem("access_token", token);
       navigate("/chatbot");
     } catch (err) {
+      console.error("❌ Login failed:", err);
       setError("Login failed. Please try again.");
     }
   };

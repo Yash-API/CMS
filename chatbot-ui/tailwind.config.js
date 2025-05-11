@@ -1,3 +1,5 @@
+// Renamed to tailwind.config.js.bak to disable Tailwind CSS configuration
+// Backup of original tailwind.config.js content:
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [

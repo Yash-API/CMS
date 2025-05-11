@@ -1,0 +1,156 @@
+/* Reset and base setup */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 🌈 Animated gradient background */
+body {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #6b73ff, #a044ff);
+  background-size: 400% 400%;
+  animation: gradientFlow 12s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* align to top, can adjust via padding */
+  padding-top: 10vh;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 💡 Login box styling with animation */
+.login-container {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  color: #fff;
+  transform: translateY(30px);
+  opacity: 0;
+  animation: fadeInUp 1s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.login-container:hover {
+  transform: translateY(-2px) scale(1.01);
+  transition: all 0.3s ease;
+}
+
+/* Heading */
+.login-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+}
+
+/* Inputs */
+.login-input {
+  width: 100%;
+  padding: 14px 18px;
+  margin-bottom: 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.login-input::placeholder {
+  color: #e0e0e0;
+}
+
+.login-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Error */
+.login-error {
+  color: #ff6b6b;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* 🚀 Animated button */
+.login-button {
+  width: 100%;
+  padding: 14px 0;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button:hover {
+  transform: scale(1.02);
+}
+
+/* Shimmer animation */
+.login-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.2)
+  );
+  transform: skewX(-20deg);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+
+/* 📱 Responsive (mobile tweaks) */
+@media screen and (max-width: 480px) {
+  .login-container {
+    padding: 2rem 1.5rem;
+    max-width: 90%;
+  }
+
+  .login-title {
+    font-size: 1.6rem;
+  }
+
+  .login-button {
+    font-size: 1rem;
+  }
+}

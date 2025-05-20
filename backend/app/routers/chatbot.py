@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.utils.security import get_current_user
+from app.core.security import get_current_user
 from app.utils.nlp_utils import text_to_query
 from app.database import get_db
 from app import models  # ✅ Needed for PredefinedQueries

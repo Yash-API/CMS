@@ -6,7 +6,6 @@ from datetime import datetime
 from app.database import get_db
 from app import models
 from app.models import Client
-from app.core import crud
 from app.schemas.client_schema import ClientCreate, ClientResponse
 from app.schemas.client_payment_schema import ClientPaymentCreate, ClientPaymentResponse
 from app.service.client_service import update_client_info, add_payment
@@ -35,8 +34,8 @@ def get_clients_dashboard(db: Session = Depends(get_db)):
             detail="Error retrieving clients"
         )
 
-@router.put("/{client_id}", response_model=schemas.ClientResponse)
-def update_client(client_id: int, client: schemas.ClientCreate, db: Session = Depends(get_db)):
+@router.put("/{client_id}", response_model=ClientResponse)
+def update_client(client_id: int, client: ClientCreate, db: Session = Depends(get_db)):
     if not client_id and not client.name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -50,8 +49,8 @@ def update_client(client_id: int, client: schemas.ClientCreate, db: Session = De
         )
     return db_client
 
-@router.post("/", response_model=schemas.ClientResponse, status_code=status.HTTP_201_CREATED)
-def create_client(client: schemas.ClientCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=ClientResponse, status_code=status.HTTP_201_CREATED)
+def create_client(client: ClientCreate, db: Session = Depends(get_db)):
     """
     Create a new client with proper validation and error handling.
     """

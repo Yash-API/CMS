@@ -13,12 +13,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @router.get("/employees/me")
-def get_current_employee(employee: schemas.EmployeeResponse = Depends(get_current_user)):
+def get_current_employee(employee: EmployeeResponse = Depends(get_current_user)):
     return employee
 
-
-@router.put("/{employee_id}", response_model=schemas.EmployeeResponse)
-def update_employee(employee_id: int, employee: schemas.EmployeeCreate, db: Session = Depends(database.get_db)):
+@router.put("/{employee_id}", response_model=EmployeeResponse)
+def update_employee(employee_id: int, employee: EmployeeCreate, db: Session = Depends(database.get_db)):
     if not employee_id and not employee.name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -33,8 +32,8 @@ def update_employee(employee_id: int, employee: schemas.EmployeeCreate, db: Sess
     return db_employee
 
 
-@router.post("/", response_model=schemas.EmployeeResponse)
-def create_employee(employee: schemas.EmployeeCreate, db: Session = Depends(database.get_db)):
+@router.post("/", response_model=EmployeeResponse)
+def create_employee(employee: EmployeeCreate, db: Session = Depends(database.get_db)):
     # Password hashing removed as Employee model does not have password field
     db_employee = models.Employee(
         name=employee.name,

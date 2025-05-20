@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Directly assign the API key here
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "OPENAI_API_KEY"
 
 logger.debug(f"Using direct OPENAI_API_KEY: {OPENAI_API_KEY[:8]}{'*' * (len(OPENAI_API_KEY) - 8)}")
 

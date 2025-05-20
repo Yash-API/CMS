@@ -1,3 +1,60 @@
+# services:
+#   db:
+#     image: postgres:14
+#     container_name: db
+#     restart: always
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: yash1009
+#       POSTGRES_DB: Chatbot
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+#     networks:
+#       - app-network
+#   backend:
+#     build: ./backend
+#     container_name: backend
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     environment:
+#       - DATABASE_URL=postgresql://postgres:yash1009@db:5432/Chatbot
+#       - OPENAI_API_KEY=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
+#     ports:
+#       - "8000:8000"
+#     networks:
+#       - app-network
+#     healthcheck:
+#       test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+#   frontend:
+#     build:
+#       context: ./chatbot-ui
+#       args:
+#         VITE_API_URL: http://192.168.29.164:8000
+#     container_name: frontend
+#     environment:
+#       - VITE_API_URL=http://192.168.29.164:8000
+#     ports:
+#       - "3000:80"
+#     depends_on:
+#       backend:
+#         condition: service_healthy
+#     networks:
+#       - app-network
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+# volumes:
+#   postgres_data:
+
 services:
   db:
     image: postgres:14

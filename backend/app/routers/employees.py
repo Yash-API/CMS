@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.dependencies import get_current_user
-from app import models, schemas, database
+from app.core.dependencies import get_current_user
+from app import models, database
+from app.schemas.employee_schema import EmployeeCreate, EmployeeResponse
+from app.service.employee_service import get_employees, add_employee, modify_employee
 from passlib.context import CryptContext
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -48,7 +50,6 @@ def create_employee(employee: schemas.EmployeeCreate, db: Session = Depends(data
 
 
 @router.get("/")
-@router.get("/dashboard")
 def get_employees_dashboard(db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
     """
     Retrieve all employees for the dashboard.
@@ -82,3 +83,34 @@ def get_all_employees(
         )
 
     return {"employees": employees}
+
+
+@router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_employee(employee_id: int, db: Session = Depends(database.get_db)):
+    """
+    Delete an employee by ID
+    """
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found"
+        )
+    db.delete(employee)
+    db.commit()
+    return None
+
+@router.delete("/name/{employee_name}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_employee_by_name(employee_name: str, db: Session = Depends(database.get_db)):
+    """
+    Delete an employee by name
+    """
+    employee = db.query(models.Employee).filter(models.Employee.name.ilike(employee_name)).first()
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found"
+        )
+    db.delete(employee)
+    db.commit()
+    return None

@@ -17,15 +17,24 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
-app = FastAPI(title="Company Management System API")
+app = FastAPI(
+    title="Company Management System API",
+    # Remove /api prefix as it's handled by nginx
+    root_path=""
+)
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL in production
+    allow_origins=[
+        "http://192.168.29.164:3000",  # Frontend URL
+        "http://localhost:3000",        # Local development
+        "http://127.0.0.1:3000"        # Alternative local URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 

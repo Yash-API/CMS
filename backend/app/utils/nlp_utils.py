@@ -8,13 +8,16 @@ from dotenv import load_dotenv
 from app.models import Employee, Client, ClientPayment, PredefinedQueries
 
 # Load environment and configure logging
-load_dotenv()
+import logging
+from openai import OpenAI
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY not set in .env")
+# Directly assign the API key here
+OPENAI_API_KEY = "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"
+
+logger.debug(f"Using direct OPENAI_API_KEY: {OPENAI_API_KEY[:8]}{'*' * (len(OPENAI_API_KEY) - 8)}")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -78,7 +81,7 @@ User question: "{text}"
         logger.debug(f"Sending prompt to GPT:\n{prompt}")
         response = await asyncio.to_thread(
             client.chat.completions.create,
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that only returns SQL queries as a JSON array."},
                 {"role": "user", "content": prompt}

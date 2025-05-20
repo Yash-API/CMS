@@ -4,9 +4,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from datetime import datetime
 from app.database import get_db
-from app import schemas, models, crud
+from app import models
 from app.models import Client
-from app.schemas import ClientCreate, ClientResponse, ClientPaymentCreate, ClientPaymentResponse
+from app.core import crud
+from app.schemas.client_schema import ClientCreate, ClientResponse
+from app.schemas.client_payment_schema import ClientPaymentCreate, ClientPaymentResponse
+from app.service.client_service import update_client_info, add_payment
 from typing import List
 import logging
 
@@ -19,7 +22,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter()
 
 @router.get("/", response_model=List[ClientResponse])
-@router.get("/dashboard", response_model=List[ClientResponse])
 def get_clients_dashboard(db: Session = Depends(get_db)):
     """
     Retrieve all clients for the dashboard.
@@ -105,6 +107,63 @@ def create_client(client: schemas.ClientCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid input data"
         )
+
+@router.delete("/{client_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_client(client_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a client by ID
+    """
+    try:
+        # First, delete any associated payments
+        db.query(models.ClientPayment).filter(models.ClientPayment.client_id == client_id).delete()
+        
+        # Then delete the client
+        client = db.query(Client).filter(Client.id == client_id).first()
+        if not client:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Client not found"
+            )
+        
+        db.delete(client)
+        db.commit()
+        return None
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error while deleting client: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error occurred while deleting client"
+        )
+
+@router.delete("/name/{client_name}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_client_by_name(client_name: str, db: Session = Depends(get_db)):
+    """
+    Delete a client by name
+    """
+    try:
+        client = db.query(Client).filter(Client.name.ilike(client_name)).first()
+        if not client:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Client not found"
+            )
+            
+        # First, delete any associated payments
+        db.query(models.ClientPayment).filter(models.ClientPayment.client_id == client.id).delete()
+        
+        # Then delete the client
+        db.delete(client)
+        db.commit()
+        return None
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error while deleting client: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error occurred while deleting client"
+        )
+
 
 @router.post("/payments", response_model=ClientPaymentResponse, status_code=status.HTTP_201_CREATED)
 def add_client_payment(payment: ClientPaymentCreate, db: Session = Depends(get_db)):

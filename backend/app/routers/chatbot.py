@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.utils.security import get_current_user
 from app.utils.nlp_utils import text_to_query
 from app.database import get_db
+from app import models  # ✅ Needed for PredefinedQueries
 
 router = APIRouter(tags=["Chatbot"])
 
@@ -37,7 +38,18 @@ async def convert_to_sql(
     db: Session = Depends(get_db)
 ):
     print("🚀 convert_to_sql endpoint hit")
-    sql_list = await text_to_query(query.text)
+
+    # 1. Check if question already exists
+    cached_query = db.query(models.PredefinedQueries).filter(
+        models.PredefinedQueries.question.ilike(query.text)
+    ).first()
+
+    if cached_query:
+        print("📦 Using cached query from database")
+        sql_list = f'["{cached_query.sql_query}"]'
+    else:
+        print("🤖 Generating new query using GPT")
+        sql_list = await text_to_query(query.text)
 
     try:
         queries = json.loads(sql_list)
@@ -48,7 +60,7 @@ async def convert_to_sql(
         if not queries:
             raise HTTPException(
                 status_code=400,
-                detail=f"GPT failed and no fallback query matched.\nGPT Error: {e}\nRaw: {sql_list}"
+                detail=f"GPT failed and no fallback matched.\nGPT Error: {e}\nRaw: {sql_list}"
             )
 
     executed_sql = []
@@ -58,7 +70,7 @@ async def convert_to_sql(
         for sql in queries:
             cleaned_sql = sql.strip().rstrip(";")
 
-            # Replace client name with actual ID if using subquery
+            # Subquery replacement for client ID
             if (
                 "insert into client_payments" in cleaned_sql.lower()
                 and "select id from clients" in cleaned_sql.lower()
@@ -82,10 +94,11 @@ async def convert_to_sql(
 
             executed_sql.append(cleaned_sql)
 
-            # Block dangerous queries
+            # Block unsafe queries
             if cleaned_sql.lower().startswith(("update", "delete")) and "where" not in cleaned_sql.lower():
-                raise HTTPException(status_code=400, detail="Unsafe SQL: missing WHERE clause in UPDATE/DELETE.")
+                raise HTTPException(status_code=400, detail="Unsafe SQL: missing WHERE clause.")
 
+            # Execute the SQL
             if cleaned_sql.lower().startswith("select"):
                 result = db.execute(text(cleaned_sql)).fetchall()
                 if result:
@@ -105,9 +118,25 @@ async def convert_to_sql(
                 response_lines.append(f"{cleaned_sql.split()[0].upper()} executed successfully.")
             else:
                 response_lines.append(f"Unsupported SQL command: {cleaned_sql}")
-
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"SQL execution failed: {str(e)}")
+
+    # Check if success occurred (insert/update/delete or select returned data)
+    success = any("successfully" in line.lower() or ":" in line for line in response_lines)
+
+    # 2. Store successful, non-cached query
+    if success and not cached_query and executed_sql:
+        try:
+            new_predefined_query = models.PredefinedQueries(
+                question=query.text,
+                sql_query=executed_sql[0]
+            )
+            db.add(new_predefined_query)
+            db.commit()
+            print("💾 Stored successful query in database")
+        except Exception as e:
+            print(f"❌ Failed to store query in database: {str(e)}")
+            db.rollback()
 
     return {
         "user": user,

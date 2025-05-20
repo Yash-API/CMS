@@ -3,9 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./styles/Login.css";
 
-
-// Use API URL from env or fallback to localhost
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// API URLs from environment variables
+const API_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+const API_URL_LAN = import.meta.env.VITE_API_URL_LAN;
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,33 +14,48 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("✅ VITE_API_URL:", API_URL);
+    console.log("✅ API_URL_LOCAL:", API_URL_LOCAL);
+    console.log("✅ API_URL_LAN:", API_URL_LAN);
   }, []);
 
   const login = async () => {
-    try {
-      debugger; // Breakpoint
-      const params = new URLSearchParams();
-      params.append("username", email);
-      params.append("password", password);
+    const endpoints = [API_URL_LOCAL, API_URL_LAN];
 
-      console.log("🔐 Sending login request to:", `${API_URL}/api/auth/login`);
+    for (let baseUrl of endpoints) {
+      try {
+        const params = new URLSearchParams();
+        params.append("username", email);
+        params.append("password", password);
 
-      const res = await axios.post(`${API_URL}/api/auth/login`, params, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
+        const apiUrl = `${baseUrl}/api/auth/login`;
+        console.log("🔐 Trying login at:", apiUrl);
 
-      const token = res.data.access_token;
-      console.log("✅ Login Success. Token:", token);
+        const res = await axios.post(apiUrl, params, {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          withCredentials: false,
+          timeout: 8000,
+          validateStatus: (status) => status >= 200 && status < 500,
+        });
 
-      localStorage.setItem("access_token", token);
-      navigate("/chatbot");
-    } catch (err) {
-      console.error("❌ Login failed:", err);
-      setError("Login failed. Please try again.");
+        if (res.status === 200) {
+          const token = res.data.access_token;
+          console.log("✅ Login Success. Token:", token);
+          localStorage.setItem("access_token", token);
+          localStorage.setItem("api_base_url", baseUrl); // Save the working base URL
+          navigate("/chatbot");
+          return; // Exit after success
+        } else {
+          console.warn(`❌ Login failed with status ${res.status} from ${baseUrl}`);
+        }
+      } catch (err) {
+        console.warn(`⚠️ Error with ${baseUrl}:`, err.message);
+      }
     }
+
+    // Final fallback message if none succeed
+    setError("Login failed. Server unreachable or invalid credentials.");
   };
 
   return (

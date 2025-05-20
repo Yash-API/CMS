@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -20,45 +24,50 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Pytest cache
 .pytest_cache/
+
+# Virtual environments
 venv/
 env/
 .venv/
-.env/
 
-# Logs
+# Environment variables
+.env
+
+# Logs and databases
 *.log
 *.sqlite
 app/logs/
 
-# IDE
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 .DS_Store
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-company-management-frontend/.env
-company-management-frontend/.env.local
-company-management-frontend/.env.development
-company-management-frontend/.env.test
-company-management-frontend/.env.production
-company-management-frontend/build/
-company-management-frontend/.next/
-company-management-frontend/out/
+# Node.js dependencies and logs (for chatbot-ui)
+chatbot-ui/node_modules/
+chatbot-ui/npm-debug.log*
+chatbot-ui/yarn-debug.log*
+chatbot-ui/yarn-error.log*
 
-# Temporary/experimental utility files
+# Frontend build outputs
+chatbot-ui/dist/
+chatbot-ui/dist-ssr/
+chatbot-ui/build/
+chatbot-ui/.next/
+chatbot-ui/out/
+
+# Temporary/backup files
+*.local
+*.bak
+*.tmp
+
+# Specific utility scripts (if any)
 app/utils/add_pending_payment_column_v2.py
 app/utils/add_pending_payment_column_v3.py
 app/utils/add_pending_payment_column_v4.py
 app/utils/add_pending_payment_column_v5.py
-
-# Local development files
-*.local
-*.bak
-*.tmp
